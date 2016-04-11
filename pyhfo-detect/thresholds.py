@@ -6,7 +6,7 @@ Created on 07/04/2016
 @author: Anderson Brito da Silva
 """
 
-def STD(signal,ths):
+def std(signal,ths):
     '''
     Calcule threshold by Standar Desviations above the mean
     
@@ -22,7 +22,7 @@ def STD(signal,ths):
     ths_value = np.mean(signal) + ths*np.std(signal)
     return ths_value
 
-def Tukey(signal,ths):
+def tukey(signal,ths):
     '''
     Calcule threshold by Tukey method.
     
@@ -54,7 +54,7 @@ def percentile(signal,ths):
     ths_value = np.percentile(signal,ths)
     return ths_value
 
-def Quian(signal,ths):
+def quian(signal,ths):
     '''
     Calcule threshold by Quian
     Quian Quiroga, R. 2004. Neural Computation 16: 1661–87.

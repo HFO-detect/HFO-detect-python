@@ -9,7 +9,7 @@ Created on 07/04/2016
 import numpy as np
 import scipy.signal as sig
 
-def Hilbert_envelope(signal):
+def hilbert_envelope(signal):
     '''
     Calcule the Hilbert envelope
     
@@ -19,7 +19,7 @@ def Hilbert_envelope(signal):
     '''
     return np.abs(sig.hilbert(sig.detrend(signal)))
 
-def Hilbert_energy(signal):
+def hilbert_energy(signal):
     '''
     Calcule the Hilbert energy
     
@@ -29,7 +29,7 @@ def Hilbert_energy(signal):
     '''
     return np.abs(sig.hilbert(sig.detrend(signal)))**2
     
-def Teager_Energy(signal):
+def teager_energy(signal):
     '''
     Calcule the Teager energy
     
@@ -45,7 +45,7 @@ def Teager_Energy(signal):
     energy = np.append(energy,energy[-1])
     return energy
     
-def RMS(signal, window_size = 6):
+def rms(signal, window_size = 6):
     '''
     Calcule the Root Mean Square (RMS) energy
     
@@ -59,7 +59,7 @@ def RMS(signal, window_size = 6):
     return np.sqrt(np.convolve(aux, window, 'same'))
 
     
-def STenergy(signal, window_size = 6):
+def stenergy(signal, window_size = 6):
     '''
     Calcule Short Time energy - 
     Dümpelmann et al, 2012.  Clinical Neurophysiology: 123 (9): 1721–31.
