@@ -2,90 +2,79 @@
 """
 Library of functions for feature extraction
 
+Module for feature extraxtions. Usually short pieces of signal such as HFOs
+themselves or windows of signal.
+
 Created on 07/04/2016
 @author: Anderson Brito da Silva
 """
 
 import numpy as np
-import scipy.signal as sig
 
-def hilbert_envelope(signal):
+def extract_teager_energy(signal):
     '''
-    Calcule the Hilbert envelope
-    
-    Parameters:
-    ----------
-        signal - numpy array
-    '''
-    return np.abs(sig.hilbert(sig.detrend(signal)))
+    Extract the Teager energy
 
-def hilbert_energy(signal):
-    '''
-    Calcule the Hilbert energy
-    
     Parameters:
     ----------
         signal - numpy array
     '''
-    return np.abs(sig.hilbert(sig.detrend(signal)))**2
-    
-def teager_energy(signal):
-    '''
-    Calcule the Teager energy
-    
-    Parameters:
-    ----------
-        signal - numpy array
-    '''
-    sqr = np.power(signal[1:-1],2) 
-    odd = signal[:-2] 
-    even = signal[2:]
+    sqr = np.power(signal[1:-1],2)
+    odd = signal[:-2]
+    even = signal[2:] # This triplicates the signal not sure about memory here.
     energy = sqr-odd*even
     energy = np.append(energy[0],energy)
     energy = np.append(energy,energy[-1])
     return energy
-    
-def rms(signal, window_size = 6):
-    '''
-    Calcule the Root Mean Square (RMS) energy
-    
-    Parameters:
-    ----------
-        signal - numpy array
-        window_size - number of the points of the window
-    '''
-    aux = np.power(signal,2)
-    window = np.ones(window_size)/float(window_size)
-    return np.sqrt(np.convolve(aux, window, 'same'))
 
-    
-def stenergy(signal, window_size = 6):
+def extract_rms(signal, window_size = 6):
     '''
-    Calcule Short Time energy - 
-    Dümpelmann et al, 2012.  Clinical Neurophysiology: 123 (9): 1721–31.
-    
+    Extract the Root Mean Square (RMS) energy
+
     Parameters:
     ----------
         signal - numpy array
-        window_size - number of the points of the window
+
+    Returns:
+    -------
+        rms - float
     '''
-    aux = np.power(signal,2)
-    window = np.ones(window_size)/float(window_size)
-    return np.convolve(aux, window, 'same')
-    
-    
-def line_lenght(signal, window_size = 6):
+
+    return np.sqrt(np.mean(np.power(signal,2)))
+
+
+def extract_stenergy(signal):
     '''
-    Calcule Short time line leght - 
+    Extract Short Time energy -
     Dümpelmann et al, 2012.  Clinical Neurophysiology: 123 (9): 1721–31.
-    
+
     Parameters:
     ----------
         signal - numpy array
-        window_size - number of the points of the window
+
+    Returns:
+    -------
+        stenergy - float
     '''
-    aux = np.abs(np.diff(signal))
-    window = np.ones(window_size)/float(window_size)
-    data =  np.convolve(aux, window, 'same')
-    data = np.append(data,data[-1])
-    return data
+
+    return np.mean(np.power(signal,2))
+
+
+def extract_line_lenght(signal):
+    '''
+    Extract Short time line leght -
+    Gardner er al, 2006.  Clinical Neurophysiology: 118 (5): 1134–43.
+    Note:
+    ----
+        There is a slight difference between extract LL and compute LL.
+
+    Parameters:
+    ----------
+        signal - numpy array
+
+    Returns:
+    -------
+        stenergy - float
+    '''
+
+    return np.sum(np.abs(np.diff(signal)))
