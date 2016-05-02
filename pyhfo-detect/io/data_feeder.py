@@ -3,6 +3,7 @@
 
 
 from . import D_file_read
+import pyedflib
 
 
 def data_feeder(file_path, start_samp, stop_samp, channel_name):
@@ -32,5 +33,11 @@ def data_feeder(file_path, start_samp, stop_samp, channel_name):
         ch_idx = xheader['channel_name'].index(channel_name)
         data = D_file_read.read_d_header(sheader, [ch_idx],
                                          start_samp, stop_samp)
+
+    elif ext in ['edf','bdf']:
+        f = pyedflib.EdfReader(file_path)
+        ch_idx = f.getSignalLabels().index(channel_name)
+        fs = f.getSampleFrequency(ch_idx)
+        data = f.readSignal(ch_idx)
 
     return data, fs
