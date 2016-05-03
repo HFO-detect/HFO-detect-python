@@ -240,11 +240,11 @@ def read_d_data(sheader,ch_list,samp_start,samp_end):
         return
 
     ### Now get the desired channel
-    data = np.zeros([len(ch_list),n_samp],dtype=prec)
-    for i,x in enumerate(ch_list):
-        data[i] = np.array(dd.data[x::sheader['nchan']])
+#    data = np.zeros([len(ch_list),n_samp],dtype=prec)
+#    for i,x in enumerate(ch_list):
+#        data[i] = np.array(dd.data[x::sheader['nchan']])
 
-    return data
+    return np.array(dd.data).reshape(n_samp,sheader['nchan'])[:,ch_list]
 
 def get_prec(sheader):
     """
