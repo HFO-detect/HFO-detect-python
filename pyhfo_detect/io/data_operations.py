@@ -72,6 +72,8 @@ def create_output_df(fields=[],dtypes=None):
         if col in dtype_dict.keys():
             out_df[col] = out_df[col].astype(dtype_dict[col])
             
+    return out_df
+            
 def add_metadata():
     """
     Function to add metadata to the output dataframe
