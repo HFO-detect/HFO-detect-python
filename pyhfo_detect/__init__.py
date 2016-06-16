@@ -4,5 +4,5 @@
 
 from .core import *
 from .feature_extraction import *
-#from .signal_transform import *
+from .signal_transform import *
 from .thresholds import *
