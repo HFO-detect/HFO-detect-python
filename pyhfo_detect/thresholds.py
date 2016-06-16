@@ -8,7 +8,7 @@ Created on 07/04/2016
 
 import numpy as np
 
-def std(signal,ths):
+def th_std(signal,ths):
     '''
     Calcule threshold by Standar Desviations above the mean
 
@@ -24,7 +24,7 @@ def std(signal,ths):
     ths_value = np.mean(signal) + ths*np.std(signal)
     return ths_value
 
-def tukey(signal,ths):
+def th_tukey(signal,ths):
     '''
     Calcule threshold by Tukey method.
 
@@ -40,7 +40,7 @@ def tukey(signal,ths):
     ths_value = np.percentile(signal,75) + ths*(np.percentile(signal,75)-np.percentile(signal,25))
     return ths_value
 
-def percentile(signal,ths):
+def th_percentile(signal,ths):
     '''
     Calcule threshold by Percentile
 
@@ -56,7 +56,7 @@ def percentile(signal,ths):
     ths_value = np.percentile(signal,ths)
     return ths_value
 
-def quian(signal,ths):
+def th_quian(signal,ths):
     '''
     Calcule threshold by Quian
     Quian Quiroga, R. 2004. Neural Computation 16: 1661–87.
