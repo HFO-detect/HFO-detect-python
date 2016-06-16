@@ -74,9 +74,22 @@ def create_output_df(fields=[],dtypes=None):
             
     return out_df
             
-def add_metadata():
+def add_metadata(df,metadata):
     """
-    Function to add metadata to the output dataframe
+    Convenience function to add metadata to the output dataframe.
     
+    Parameters:
+    -----------
+    df(pandas.DataFrame) - dataframe with original data\n
+    metadata(dict) - dictionary with column_name:value\n
+    
+    Returns:
+    --------
+    new_df(pandas.DataFrame) - updated dataframe
     """
+    
+    for key in metadata.keys():
+        df[key] = metadata[key]
+        
+    return df
         
