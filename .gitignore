@@ -58,5 +58,11 @@ docs/_build/
 # PyBuilder
 target/
 
-#Ipython Notebook
+# Ipython Notebook
 .ipynb_checkpoints
+
+# Unclosed files
+*~
+
+# Spyder project files
+.spyderproject
