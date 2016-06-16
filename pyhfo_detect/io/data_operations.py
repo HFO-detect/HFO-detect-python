@@ -30,9 +30,9 @@ def data_feeder(file_path, start_samp, stop_samp, channel_name):
     if ext == 'd':
         sheader, xheader = D_file_read.read_d_header(file_path)
         fs = sheader['fsamp']
-        ch_idx = xheader['channel_name'].index(channel_name)
-        data = D_file_read.read_d_header(sheader, [ch_idx],
-                                         start_samp, stop_samp)
+        ch_idx = xheader['channel_names'].index(channel_name)
+        data = D_file_read.read_d_data(sheader, [ch_idx],
+                                       start_samp, stop_samp)
 
     elif ext in ['edf','bdf']:
         f = pyedflib.EdfReader(file_path)

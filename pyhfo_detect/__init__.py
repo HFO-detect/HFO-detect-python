@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2016, HFO-detect Development Team.
 
-__all__ = ['io']
+
+from .core import *
+from .feature_extraction import *
+#from .signal_transform import *
+from .thresholds import *

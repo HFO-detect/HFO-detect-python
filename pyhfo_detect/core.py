@@ -14,10 +14,11 @@ high_fc
 @author: Jan Cimbalnik
 """
 
-from signal_transform import *
+#from signal_transform import *
 
-import pandas as pd
+#import pandas as pd
 
 # %% Line-length detector
 
-def line_length_detect(data,pat_id,channel_name,low_fc):
+#def line_length_detect(data,pat_id,channel_name,low_fc):
+#    print('bu')
