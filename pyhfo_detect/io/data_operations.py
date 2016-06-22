@@ -37,8 +37,11 @@ def data_feeder(file_path, start_samp, stop_samp, channel_name):
                                        start_samp, stop_samp)
 
     elif ext in ['edf','bdf']:
-        f = pyedflib.EdfReader(file_path)
-        ch_idx = f.getSignalLabels().index(channel_name)
+        if ext == 'edf':
+            f = pyedflib.EdfReader(file_path,3)
+        elif ext == 'bdf':
+            f = pyedflib.EdfReader(file_path,4)
+        ch_idx = [x.decode() for x in f.getSignalLabels()].index(channel_name)
         fs = f.getSampleFrequency(ch_idx)
         data = f.readSignal(ch_idx)
 
