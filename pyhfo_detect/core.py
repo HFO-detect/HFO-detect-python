@@ -70,7 +70,7 @@ def line_length_detect(data, fs, low_fc, high_fc, threshold, window_size,
         if win_stop > len(filt_data):
             win_stop = len(filt_data)
             
-        LL.append(extract_line_lenght(filt_data[win_start:win_stop]))
+        LL.append(extract_line_lenght(filt_data[int(win_start):int(win_stop)]))
         
         win_start += samp_win_inc
         win_stop += samp_win_inc
