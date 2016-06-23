@@ -7,25 +7,29 @@ Script load file, detect and dump to pandas dataframe
 @author: jan_cimbalnik
 """
 
+import os
+
 from pyhfo_detect.io import data_feeder, add_metadata
 from pyhfo_detect import line_length_detect
+
 import matplotlib.pyplot as plt
 import numpy as np
 
-file_path = '/home/jan_cimbalnik/Dropbox/Easrec-1404171032.d'
+#Edf file
+parent_dir = os.path.realpath('..')
+file_path = parent_dir+'/test_data/ieeg_sample.edf'
 
 # Get the data
-data,fs = data_feeder(file_path, 0, 50000, "O'1")
-data = data[:,0]
+data,fs = data_feeder(file_path, 0, 50000, "B'1")
 
 # Presets - metadata - suggested 
-met_dat = {'channel_name':'O1', 'pat_id':'12'}
+met_dat = {'channel_name':"B'1", 'pat_id':'12'}
 
 
 # %% We have data call the core of the algorithm and get detections
 LL_df = line_length_detect(data, fs, 80, 600, 1, 0.1, 0.25)
 
-# %% Optional conversion to uUTC time
+# %% Optional conversion to uUTC time or to absolute samples in the recording
 
 # %% We have the dataframe, lets add metadata
 LL_df = add_metadata(LL_df,met_dat)
@@ -42,6 +46,7 @@ for row in LL_df.iterrows():
              'r-')
 
 
-# %% Insert into database
 
-# %% Machine learning
+# %% Optional insert into database
+
+# %% Optional machine learning
