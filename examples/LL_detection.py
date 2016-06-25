@@ -10,7 +10,7 @@ Script load file, detect and dump to pandas dataframe
 import os
 
 from pyhfo_detect.io import data_feeder, add_metadata
-from pyhfo_detect import line_length_detect
+from pyhfo_detect.core import ll_detect
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -27,11 +27,11 @@ met_dat = {'channel_name':"B'1", 'pat_id':'12'}
 
 
 # %% We have data call the core of the algorithm and get detections
-LL_df = line_length_detect(data, fs, 80, 600, 1, 0.1, 0.25)
+LL_df = ll_detect(data, fs, 80, 600, 1, 0.1, 0.25)
 
 # %% Optional conversion to uUTC time or to absolute samples in the recording
 
-# %% We have the dataframe, lets add metadata
+# %% Adding metadata
 LL_df = add_metadata(LL_df,met_dat)
 
 # %% Optional rearange columns
