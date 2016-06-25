@@ -19,8 +19,8 @@ from ..io.data_operations import *
 
 # %% Line-length detector
 
-def ll_detect(data, fs, low_fc, high_fc, threshold, window_size,
-                       window_overlap):
+def ll_detect(data, fs, low_fc, high_fc,
+              threshold, window_size, window_overlap):
     """
     Line-length detection algorithm. (CITATIONS)
     

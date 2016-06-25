@@ -19,8 +19,8 @@ from ..io.data_operations import *
 
 # %% RMS detector
 
-def rms_detect(data, fs, low_fc, high_fc, threshold, window_size,
-               window_overlap):
+def rms_detect(data, fs, low_fc, high_fc,
+               threshold, window_size, window_overlap):
     """
     Toot mean square detection algorithm. (CITATIONS)
     
