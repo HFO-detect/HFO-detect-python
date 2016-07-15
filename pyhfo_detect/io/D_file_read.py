@@ -244,7 +244,10 @@ def read_d_data(sheader,ch_list,samp_start,samp_end):
 #    for i,x in enumerate(ch_list):
 #        data[i] = np.array(dd.data[x::sheader['nchan']])
 
-    return np.array(dd.data).reshape(n_samp,sheader['nchan'])[:,ch_list]
+    if len(ch_list) == 1:
+        return np.array(dd.data).reshape(n_samp,sheader['nchan'])[:,ch_list[0]]
+    else:
+        return np.array(dd.data).reshape(n_samp,sheader['nchan'])[:,ch_list]
 
 def get_prec(sheader):
     """
