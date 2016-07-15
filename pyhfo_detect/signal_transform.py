@@ -64,7 +64,7 @@ def compute_rms(signal, window_size = 6):
 def compute_stenergy(signal, window_size = 6):
     '''
     Calcule Short Time energy -
-    Dümpelmann et al, 2012.  Clinical Neurophysiology: 123 (9): 1721–31.
+    Dümpelmann et al, 2012.  Clinical Neurophysiology: 123 (9): 1721-31.
 
     Parameters:
     ----------
@@ -79,7 +79,7 @@ def compute_stenergy(signal, window_size = 6):
 def compute_line_lenght(signal, window_size = 6):
     '''
     Calcule Short time line leght -
-    Dümpelmann et al, 2012.  Clinical Neurophysiology: 123 (9): 1721–31.
+    Dümpelmann et al, 2012.  Clinical Neurophysiology: 123 (9): 1721-31.
 
     Parameters:
     ----------
@@ -91,3 +91,79 @@ def compute_line_lenght(signal, window_size = 6):
     data =  np.convolve(aux, window, 'same')
     data = np.append(data,data[-1])
     return data
+    
+def compute_stockwell_transform(signal, fs, min_freq, max_freq, f_fs = 1,
+                                factor = 1):
+    """
+    Calculates Stockwell transform - 
+    Localization of the Complex Spectrum: The S Transform
+    IEEE Transactions on Signal Processing, vol. 44., number 4,
+    April 1996, pages 998-1001.
+    
+    Parameters:
+    -----------
+    signal - numpy array\n
+    min_freq - minimum frequency of ST\n
+    max_freq - maximum frequency of ST\n
+    fs - sampling frequency of the signal\n
+    f_fs - is the frequency-sampling interval you desire in the ST result\n
+    
+    Returns:
+    --------
+    st -a complex matrix containing the Stockwell transform. \n
+        The rows of STOutput are the frequencies and the columns are the time
+        values ie each column is the "local spectrum" for that point in time\n
+    t - a vector containing the sampled times\n
+    f - a vector containing the sampled frequencies\n
+    """
+    
+    # Calculate the sampled time and frequency values
+    # from the two sampling rates
+  
+    t = np.linspace(0,len(signal)-1,len(signal)-1) * fs
+    spe_nelements = np.ceil((max_freq - min_freq+1)/f_fs)
+    f = (min_freq + np.linspace(0,spe_nelements-1,spe_nelements-1)*f_fs)/(fs*len(signal)) # ????
+
+    # Compute the length of the data
+    n = len(signal)
+    
+    # Compute FFT's
+    vector_fft = np.fft.fft(signal)
+    vector_fft = np.concatenate(vector_fft,vector_fft) #Do we need this?
+
+    # Preallocate output matrix
+    st=np.zeros(np.ceil((max_freq - min_freq+1)/f_fs),n)
+    
+    # Start computing the S_transform
+    if min_freq == 0:
+        st[0,:] = np.mean(signal)*np.ones(n) #///
+    else:
+        st[0,:]=np.fft.ifft(vector_fft[min_freq+1:min_freq+n]*_g_window(n,min_freq,factor))
+        
+    for i in np.linspace(f_fs, f_fs, (max_freq - min_freq)):
+        st[i/f_fs+1,:] = np.fft.ifft(vector_fft[min_freq+i+1:min_freq+i+n]) * _g_window(n, min_freq+i, factor)
+        
+    return st, t, f
+        
+
+def _g_window(length, freq, factor):
+    """
+    Function to compute the Gaussion window for 
+    function compute_stockwell_transform.
+    
+    length-the length of the Gaussian window
+    freq-the frequency at which to evaluate the window.
+    factor- the window-width factor
+    
+    -----Outputs Returned--------------------------
+    
+    gauss-The Gaussian window
+    """
+
+    vector = np.zeros(2,length-1)
+    vector[0,:] = np.linspace(0, length-1, length-1)
+    vector[1,:] = np.linspace(-length,-1,length-1)
+    vector = np.square(vector)
+    gauss = sum(np.exp(vector))  # Gaussian window
+    
+    return gauss
