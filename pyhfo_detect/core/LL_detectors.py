@@ -78,10 +78,13 @@ def ll_detect(data, fs, low_fc, high_fc,
     while LL_idx < len(LL):
         if LL[LL_idx] >= det_th:
             event_start = LL_idx * samp_win_inc
-            while LL[LL_idx] >= det_th:
+            while LL_idx < len(LL) and LL[LL_idx] >= det_th:
                 LL_idx += 1
             event_stop = (LL_idx * samp_win_inc)+samp_win_size
-
+           
+            if event_stop > len(data):
+                 event_stop = len(data)
+        
             # Optional feature calculations can go here
 
             # Write into dataframe

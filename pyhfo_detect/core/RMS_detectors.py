@@ -64,13 +64,13 @@ def rms_detect(data, fs, low_fc, high_fc,
         if win_stop > len(filt_data):
             win_stop = len(filt_data)
             
-        RMS.append(extract_line_rms(filt_data[int(win_start):int(win_stop)]))
+        RMS.append(extract_rms(filt_data[int(win_start):int(win_stop)]))
         
         win_start += samp_win_inc
         win_stop += samp_win_inc
     
     # Create threshold    
-    det_th = th_std(rms,threshold)
+    det_th = th_std(RMS,threshold)
     
     # Detect
     RMS_idx=0
@@ -78,10 +78,13 @@ def rms_detect(data, fs, low_fc, high_fc,
     while RMS_idx < len(RMS):
         if RMS[RMS_idx] >= det_th:
             event_start = RMS_idx * samp_win_inc
-            while RMS[RMS_idx] >= det_th:
+            while RMS_idx < len(RMS) and RMS[RMS_idx] >= det_th:
                 RMS_idx += 1
             event_stop = (RMS_idx * samp_win_inc)+samp_win_size
-
+           
+            if event_stop > len(data):
+                 event_stop = len(data)
+        
             # Optional feature calculations can go here
 
             # Write into dataframe
