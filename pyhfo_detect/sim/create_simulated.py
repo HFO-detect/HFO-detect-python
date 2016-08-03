@@ -98,8 +98,8 @@ def wavelet(numcycles,f,srate):
         wave - numpy array with waveform.
         time - numpy array with the time vector.
     '''
-    N = float(2*srate*numcycles)/(f) # number of points
-    time = np.linspace(-numcycles/float(f),numcycles/float(f),N) # time vector
+    N = float(srate*numcycles)/(f) # number of points
+    time = np.linspace((-numcycles/2)/float(f),(numcycles/2)/float(f),N) # time vector
     std = numcycles/(2*np.pi*f) # standard desviation
     wave = np.exp(2*1j*np.pi*f*time)*np.exp(-(time**2)/(2*(std**2))) # waveform
     return wave,time
