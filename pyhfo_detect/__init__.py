@@ -6,4 +6,5 @@ from .core import *
 from .feature_extraction import *
 from .signal_transform import *
 from .thresholds import *
-from .sim import create_simulated
+from .sim import *
+
