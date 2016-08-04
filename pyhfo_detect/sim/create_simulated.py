@@ -114,7 +114,7 @@ def delta(srate = 5000, decay_dur = None):
     
     return delta
     
-def line_noise(srate = 5000, freq = 50, numcycles):
+def line_noise(srate = 5000, freq = 50, numcycles = None):
     """
     Line noise artifact.
     
@@ -128,6 +128,9 @@ def line_noise(srate = 5000, freq = 50, numcycles):
     --------
     line_noise - numpy array\n
     """
+    
+    if numcycles is None:
+        numcycles = np.random.randint(3,50)
     
     dur_samps = int((numcycles / freq) * srate)
     x = np.arange(dur_samps)
@@ -163,7 +166,7 @@ def artifact_spike(srate = 5000, dur = None):
     
 # %% HFO    
 
-def wavelet(numcycles,f,srate):
+def _wavelet(numcycles,f,srate):
     """
     Create a wavelet
     
@@ -203,7 +206,7 @@ def hfo(srate = 5000, f=None, numcycles = None):
         numcycles = np.random.randint(9,15)
     if f is None:
         f = np.random.randint(60,600)
-    wave,time = wavelet(numcycles,f,srate)
+    wave,time = _wavelet(numcycles,f,srate)
     return np.real(wave), time
 
 # %% Spike
@@ -222,7 +225,7 @@ def spike(srate = 5000, dur = None):
     spike - numpy array.
     """
     if dur is None:
-        dur = round(np.random.random(),1)
+        dur = round(np.random.random()*0.5,2)
     
     x = np.linspace(-4, 4, int(srate * dur)) # 4 stds
     spike_dist = norm.pdf(x, loc=0, scale=1)  # Create gaussian shape
