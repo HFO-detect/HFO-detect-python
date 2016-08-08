@@ -59,6 +59,8 @@ def get_feature_differences(gs_df, dd_df, bound_names, feature_names):
     
     Returns:
     --------
+    match_df - dataframe with indexes of matched detections\n
+    N_missed - number of missed artificial detections\n
     """
     
     # Match the detections first
