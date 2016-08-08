@@ -36,7 +36,7 @@ def pinknoise(N):
     X[range(nPts)] = X[range(nPts)]/n
     
     #prepare a right half of the spectrum - a copy of the left one
-    X[range(nPts,N)] = np.real(X[range(N/2-1,0,-1)]) - 1j*np.imag(X[range(N/2-1,0,-1)])
+    X[range(nPts,N)] = np.real(X[range(int(N/2-1),0,-1)]) - 1j*np.imag(X[range(int(N/2-1),0,-1)])
   
     y = np.fft.ifft(X)  #IFFT
     
@@ -73,7 +73,7 @@ def brownnoise(N):
     #multiplicate the left half of the spectrum
     X[range(nPts)] = X[range(nPts)]/n
     #prepare a right half of the spectrum - a copy of the left one
-    X[range(nPts,N)] = np.real(X[range(N/2-1,0,-1)]) - 1j*np.imag(X[range(N/2-1,0,-1)])
+    X[range(nPts,N)] = np.real(X[range(int(N/2-1),0,-1)]) - 1j*np.imag(X[range(int(N/2-1),0,-1)])
     
     y = np.fft.ifft(X) #IFFT
     
