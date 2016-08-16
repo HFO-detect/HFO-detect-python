@@ -22,7 +22,7 @@ from .general import match_detections
 
 from scipy.stats import ttest_1samp
 
-def eval_feature_differences(diff_df, bound_names):
+def eval_feature_differences(diff_df, bn):
     """
     Function to evaluate feature differences between known values an estimated\n
     values.
@@ -30,7 +30,7 @@ def eval_feature_differences(diff_df, bound_names):
     Parameters:
     -----------
     diff_df - dataframe produced by get_feature_differences
-    bound_names - names of event start stop [start_name, stop_name] (list)\n
+    bn - names of event start stop [start_name, stop_name] (list)\n
     
     Returns:
     --------
@@ -38,15 +38,17 @@ def eval_feature_differences(diff_df, bound_names):
     """
 
     # Get the feature diffs
-    feature_diff_keys = diff_df.keys() - bound_names
+    feature_diff_keys = diff_df.columns.difference(bn)
 
     # Run statistical test on
     stat_dict = {}
     for f_key in feature_diff_keys:
         res = ttest_1samp(diff_df.loc[:, f_key].values, 0)[1]
         stat_dict[f_key] = res
+
+    return stat_dict
     
-def get_feature_differences(gs_df, dd_df, bound_names, feature_names):
+def get_feature_differences(gs_df, dd_df, bn, feature_names):
     """
     Function to get feature differences between known and estimated values.
     
@@ -54,7 +56,7 @@ def get_feature_differences(gs_df, dd_df, bound_names, feature_names):
     -----------
     gs_df - dataframe of events with known features (pandas Dataframe)\n
     dd_df - dataframe of events with estimated efatures (pandas DataFrame)\n
-    bound_names - names of event start stop [start_name, stop_name] (list)\n
+    bn - names of event start stop [start_name, stop_name] (list)\n
     feature_names - dictionary with features as keys and column names as values\n
     
     Returns:
@@ -65,9 +67,9 @@ def get_feature_differences(gs_df, dd_df, bound_names, feature_names):
     
     # Match the detections first
     if 'frequency' in feature_names.keys():
-        match_df = match_detections(gs_df, dd_df, bound_names, feature_names['frequency'])
+        match_df = match_detections(gs_df, dd_df, bn, feature_names['frequency'])
     else:
-        match_df = match_detections(gs_df, dd_df, bound_names)
+        match_df = match_detections(gs_df, dd_df, bn)
         
     # Get count of missed detections and pop them from the df
     N_missed = len(match_df.loc[match_df.dd_index.isnull()])
@@ -78,7 +80,7 @@ def get_feature_differences(gs_df, dd_df, bound_names, feature_names):
         for match_row in match_df.iterrows():
             gs_feat = gs_df.loc[match_row[1].gs_index, feature_names[feature]]
             dd_feat = dd_df.loc[match_row[1].dd_index, feature_names[feature]]
-            match_df.loc[match_row[0],feature+'_diff'] = abs(gs_feat, dd_feat)
+            match_df.loc[match_row[0],feature+'_diff'] = gs_feat - dd_feat
             
     return match_df, N_missed
     

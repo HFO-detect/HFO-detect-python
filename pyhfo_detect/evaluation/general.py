@@ -20,7 +20,7 @@ United States
 
 import pandas as pd
 
-def match_detections(gs_df, dd_df, bound_names, freq_name = None):
+def match_detections(gs_df, dd_df, bn, freq_name = None):
     """
     Matches gold standard detections with detector detections.
     
@@ -28,7 +28,7 @@ def match_detections(gs_df, dd_df, bound_names, freq_name = None):
     -----------
     gs_df - gold standard detections (pandas DataFrame)\n
     dd_df - detector detections (pandas DataFrame)\n
-    bound_names - names of event start stop [start_name, stop_name] (list)\n
+    bn - names of event start stop [start_name, stop_name] (list)\n
     freq_name - name of frequency column (str)\n
     
     Returns:
@@ -40,9 +40,9 @@ def match_detections(gs_df, dd_df, bound_names, freq_name = None):
     match_df_idx = 0
     for row_gs in gs_df.iterrows():
         matched_idcs = []
-        gs = [row_gs[1][bound_names[0]],row_gs[1][bound_names[1]]]
+        gs = [row_gs[1][bn[0]],row_gs[1][bn[1]]]
         for row_dd in dd_df.iterrows():  # We can create a subset here?! - would speed things up
-            dd = [row_dd[1][bound_names[0]],row_dd[1][bound_names[1]]]
+            dd = [row_dd[1][bn[0]],row_dd[1][bn[1]]]
             if detection_overlap_check(gs, dd):
                 matched_idcs.append(row_dd[0])
                 
@@ -52,10 +52,10 @@ def match_detections(gs_df, dd_df, bound_names, freq_name = None):
             match_df.loc[match_df_idx] = [row_gs[0], row_dd[0]]
         else:  
             if freq_name:  # In rare event of multiple overlaps - get the closest in frequency domain
-                dd_idx = (abs(dd_df.loc[matched_idcs,freq_name]-row_gs[freq_name])).idxmin()
+                dd_idx = (abs(dd_df.loc[matched_idcs,freq_name]-row_gs[1][freq_name])).idxmin()
                 match_df.loc[match_df_idx] = [row_gs[0], dd_idx]
             else:  # Get the detection with closest event start - less precision than frequency
-                dd_idx = (abs(dd_df.loc[matched_idcs,bound_names[0]]-row_gs[bound_names[0]])).idxmin()
+                dd_idx = (abs(dd_df.loc[matched_idcs,bn[0]]-row_gs[1][bn[0]])).idxmin()
                 match_df.loc[match_df_idx] = [row_gs[0], dd_idx]
 
         match_df_idx += 1
