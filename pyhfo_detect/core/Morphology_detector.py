@@ -135,7 +135,9 @@ def morphology_detect(data, fs, low_fc, high_fc, mark,
             
     if det_cnt:
         df_out = check_oscillations(df_out, filt_data, thr_filt, min_N_osc) #FIXME - should this be a general function?
-        df_out = join_detections(df_out) #FIXME - this should be general function
+        df_out = join_detections(df_out, max_gap) #FIXME - this should be general function
+        
+    return df_out
     
 # %% Helper functions for morphology detect
 
@@ -182,9 +184,38 @@ def check_oscillations(df, data, thr_filt, min_N_osc):
             
     # Get rid of detections that did not have enough oscillations
     df = df.loc[~df.index.isin(rejected_idcs)]
+    df = df.reindex()
         
     return df
 
+def join_detections(df, max_gap):
+    """
+    Function to join detections.
+    """
+    
+    N_det_c = 0    
+    
+    joined_df = df[0:1]  
+    
+    for row in df[1:].iterrows():
+        # Join detection
+        if row[1].event_start > joined_df.loc[N_det_c,'event_stop']:
+            n_diff = row[1].event_start - joined_df.loc[N_det_c,'event_stop']
+            
+            if n_diff < max_gap:
+                joined_df.loc[N_det_c,'event_stop'] = row[1].event_stop
+                
+            if joined_df.loc[N_det_c,'peak_amp'] < row[1].peak_amp:
+                joined_df.loc[N_det_c,'peak_amp'] = row[1].peak_amp
+                joined_df.loc[N_det_c,'peak'] = row[1].peak
+                
+        else:
+            N_det_c += 1
+            joined_df.loc[N_det_c] = row[1]    
+            
+    return joined_df
+            
+            
 def ecdf(x):
     xs = np.sort(x)
     ys = np.arange(1, len(xs)+1)/float(len(xs))
@@ -350,7 +381,13 @@ def baseline_threshold(data, filt_data, env,
                             
     print('For '+str(npfloor(len(data)/fs))+' sec, baseline length '+str(len(indHighEntr)/fs)+' sec')
     
-    baseline = env[indHighEntr]
+    if len(indHighEntr):
+        xs, ys = ecdf(env[indHighEntr])
+        thr_cdf = xs[ys>cdf_level_filt]
+    else:
+        thr_cdf = 1000
+        
+    thr = thr_cdf
     
     if len(indHighEntr):
         xs, ys = ecdf(filt_data(indHighEntr))
@@ -358,7 +395,9 @@ def baseline_threshold(data, filt_data, env,
     else:
         thr_cdf = 1000
         
+    thr_filt = thr_cdf
+        
     # show thresholds
-    print('ThrEnv = '+str(thr)+', ThrFiltSig = '+str(thr_cdf))
+    print('ThrEnv = '+str(thr)+', ThrFiltSig = '+str(thr_filt))
     
-    return thr, thr_cdf, indHighEntr
+    return thr, thr_filt, indHighEntr
