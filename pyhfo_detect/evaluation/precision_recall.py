@@ -54,8 +54,9 @@ def create_precision_recall_curve(gs_df, dd_df, bn, threshold):
 
     # Run through thresholds
     for th in ths:
+        print('Processing threshold '+str(th))
         p, r = calculate_precision_recall(gs_df,
-                                          dd_df[dd_df == threshold],
+                                          dd_df[dd_df[threshold] == th],
                                           bn)
         precision.append(p)
         recall.append(r)
@@ -80,8 +81,8 @@ def calculate_precision_recall(gs_df, dd_df, bn):
     """
     
     # Create column for matching
-    dd_df['match'] = False
-    gs_df['match'] = False
+    dd_df.loc[:,'match'] = False
+    gs_df.loc[:,'match'] = False
     
     # Initiate true positive
     TP = 0
