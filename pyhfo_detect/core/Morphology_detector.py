@@ -70,7 +70,7 @@ def morphology_detect(data, fs, low_fc, high_fc, mark,
     time_th = np.ceil(time_th * fs)
     smooth_window = 1 / high_fc  # RMS smoothing window
     bl_border = .02  # Ignore bordeers because of ST
-    bl_mindist = 10*p.fs/1e3  # Min distance interval from baseline  
+    bl_mindist = 10*fs/1e3  # Min distance interval from baseline  
     
     if  mark == 'Ripple':
         max_amp_filt = 30
