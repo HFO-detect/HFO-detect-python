@@ -20,7 +20,8 @@ United States
 
 import pandas as pd
 
-def match_detections(gs_df, dd_df, bn, freq_name = None):
+def match_detections(gs_df, dd_df, bn, freq_name = None,
+                     one_sec_unit = None, sec_margin = 1):
     """
     Matches gold standard detections with detector detections.
     
@@ -30,26 +31,37 @@ def match_detections(gs_df, dd_df, bn, freq_name = None):
     dd_df - detector detections (pandas DataFrame)\n
     bn - names of event start stop [start_name, stop_name] (list)\n
     freq_name - name of frequency column (str)\n
+    one_sec_unit - number representing one second of signal - this can\n
+    significantly imporove the speed of this operation
+    sec_margin - margin for creating subsets of compared data - should be set\n
+    according to the legnth of compared events (1s for HFO should be enough)
     
     Returns:
     --------
     match_df - dataframe with matched indeces (pandas DataFrame)\n
     """
-
+    
     match_df = pd.DataFrame(columns = ('gs_index', 'dd_index'))
     match_df_idx = 0
     for row_gs in gs_df.iterrows():
         matched_idcs = []
         gs = [row_gs[1][bn[0]],row_gs[1][bn[1]]]
-        for row_dd in dd_df.iterrows():  # We can create a subset here?! - would speed things up
-            dd = [row_dd[1][bn[0]],row_dd[1][bn[1]]]
-            if detection_overlap_check(gs, dd):
-                matched_idcs.append(row_dd[0])
+        if one_sec_unit: # We can create subset - significant speed improvement
+            for row_dd in dd_df[(dd_df[bn[0]] < gs[0]+one_sec_unit*2) &
+                                (dd_df[bn[0]] > gs[0]-one_sec_unit*2)].iterrows(): 
+                dd = [row_dd[1][bn[0]],row_dd[1][bn[1]]]
+                if detection_overlap_check(gs, dd):
+                    matched_idcs.append(row_dd[0])
+        else:
+            for row_dd in dd_df.iterrows():  
+                dd = [row_dd[1][bn[0]],row_dd[1][bn[1]]]
+                if detection_overlap_check(gs, dd):
+                    matched_idcs.append(row_dd[0])
                 
         if len(matched_idcs) == 0:
             match_df.loc[match_df_idx] = [row_gs[0], None]                
         elif len(matched_idcs) == 1:
-            match_df.loc[match_df_idx] = [row_gs[0], row_dd[0]]
+            match_df.loc[match_df_idx] = [row_gs[0], matched_idcs[0]]
         else:  
             if freq_name:  # In rare event of multiple overlaps - get the closest in frequency domain
                 dd_idx = (abs(dd_df.loc[matched_idcs,freq_name]-row_gs[1][freq_name])).idxmin()
