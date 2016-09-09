@@ -45,8 +45,8 @@ def morphology_detect(data, fs, low_fc, high_fc, mark,
     -----------
     data(1-d numpy array) - raw data\n
     fs(int) - sampling frequency\n
-    low_fc(float) - low cut-off frequency\n
-    high_fc(float) - high cut-off frequency\n
+    low_fc(float) - low cut-off frequency, allows only 80, 250\n
+    high_fc(float) - high cut-off frequency, allows onlt 250, 500\n
     bl_mu(float) - level for maximum entropy\n
     cdf_rms(float) - percentile of detected baselines, incr in trheshold\n
     cdf_filt(float) - percentile of detected baselines, incr in trheshold\n
@@ -79,6 +79,12 @@ def morphology_detect(data, fs, low_fc, high_fc, mark,
     
     
     # 1) Filtering
+    if low_fc == 80:
+        b = filter_coefs['Rb']
+        a = filter_coefs['Ra']
+    elif low_fc == 250:
+        b = filter_coefs['FRb']
+        a = filter_coefs['FRa']
     filt_data = filtfilt(b, a, data)
     
     # 2) Envelope 
