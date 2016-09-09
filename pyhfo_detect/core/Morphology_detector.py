@@ -12,7 +12,7 @@ If you use this detector please cite!
 
 @author: jan_cimbalnik
 """
-
+import pickle,os
 
 from scipy.signal import butter, filtfilt, hilbert
 import numpy as np
@@ -23,6 +23,10 @@ from ..thresholds import *
 from ..io.data_operations import *
 
 # TODO - finish function help
+
+# %% Presets - Sergey's custom filter
+mod_dir = os.path.split(__file__)[0]
+filter_coefs = pickle.load(open(mod_dir+'Morphology_detector.pkl','rb'))
 
 # %% Morphology detector
 
@@ -75,9 +79,6 @@ def morphology_detect(data, fs, low_fc, high_fc, mark,
     
     
     # 1) Filtering
-    # FIXME - Sergey uses custom filter. Ask him about this.
-    
-    b, a = butter (3,[low_fc/(fs/2), high_fc/(fs/2)], 'bandpass')
     filt_data = filtfilt(b, a, data)
     
     # 2) Envelope 
