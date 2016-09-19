@@ -27,7 +27,8 @@ things a bit. If we incorporate clustering and machine learning we should
 switch to this.
 """
 
-def create_precision_recall_curve(gs_df, dd_df, bn, threshold):
+def create_precision_recall_curve(gs_df, dd_df, bn, threshold,
+                                  sec_unit = None, sec_margin = 1):
     """
     Function to create precision recall curve.
     
@@ -36,7 +37,11 @@ def create_precision_recall_curve(gs_df, dd_df, bn, threshold):
     gs_df - gold standard detections\n
     dd_df - automatically detected detections\n
     bn - names of event start stop [start_name, stop_name] (list)\n
-    threshold - name of the threshold field for 
+    threshold - name of the threshold field for evaluation
+    sec_unit - number representing one second of signal - this can\n
+    significantly imporove the speed of this operation
+    sec_margin - margin for creating subsets of compared data - should be set\n
+    according to the legnth of compared events (1s for HFO should be enough)
     
     Returns:
     --------
@@ -55,16 +60,25 @@ def create_precision_recall_curve(gs_df, dd_df, bn, threshold):
     # Run through thresholds
     for th in ths:
         print('Processing threshold '+str(th))
-        p, r = calculate_precision_recall(gs_df,
-                                          dd_df[dd_df[threshold] == th],
-                                          bn)
+        if sec_unit:
+            p, r = calculate_precision_recall(gs_df,
+                                              dd_df[dd_df[threshold] == th],
+                                              bn,
+                                              sec_unit,
+                                              sec_margin)
+        else:
+            p, r = calculate_precision_recall(gs_df,
+                                              dd_df[dd_df[threshold] == th],
+                                              bn)
+            
         precision.append(p)
         recall.append(r)
         
     return precision, recall
     
 
-def calculate_precision_recall(gs_df, dd_df, bn):
+def calculate_precision_recall(gs_df, dd_df, bn, 
+                               sec_unit = None, sec_margin = 1):
     """
     Function to calculate precision and recall values.
     
@@ -73,6 +87,10 @@ def calculate_precision_recall(gs_df, dd_df, bn):
     gs_df - gold standard detections\n
     dd_df - automatically detected detections\n
     bn - names of event start stop [start_name, stop_name] (list)\n
+    sec_unit - number representing one second of signal - this can\n
+    significantly imporove the speed of this operation
+    sec_margin - margin for creating subsets of compared data - should be set\n
+    according to the legnth of compared events (1s for HFO should be enough)
     
     Returns:
     --------
@@ -92,12 +110,21 @@ def calculate_precision_recall(gs_df, dd_df, bn):
         gs_det = [gs_row[1][bn[0]], gs_row[1][bn[1]]]
         
         det_flag = False
-        for dd_row in dd_df.iterrows():
-            dd_det = [dd_row[1][bn[0]], dd_row[1][bn[1]]]
-
-            if detection_overlap_check(gs_det, dd_det):
-                det_flag = True
-                break
+        if sec_unit:
+            for dd_row in dd_df[(dd_df[bn[0]] < gs_det[0]+sec_unit*sec_margin) &
+                                (dd_df[bn[0]] > gs_det[0]-sec_unit*sec_margin)].iterrows():
+                dd_det = [dd_row[1][bn[0]], dd_row[1][bn[1]]]
+    
+                if detection_overlap_check(gs_det, dd_det):
+                    det_flag = True
+                    break
+        else:      
+            for dd_row in dd_df.iterrows():
+                dd_det = [dd_row[1][bn[0]], dd_row[1][bn[1]]]
+    
+                if detection_overlap_check(gs_det, dd_det):
+                    det_flag = True
+                    break
             
         # Mark the detections
         if det_flag:

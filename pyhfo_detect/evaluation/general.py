@@ -21,7 +21,7 @@ United States
 import pandas as pd
 
 def match_detections(gs_df, dd_df, bn, freq_name = None,
-                     one_sec_unit = None, sec_margin = 1):
+                     sec_unit = None, sec_margin = 1):
     """
     Matches gold standard detections with detector detections.
     
@@ -31,7 +31,7 @@ def match_detections(gs_df, dd_df, bn, freq_name = None,
     dd_df - detector detections (pandas DataFrame)\n
     bn - names of event start stop [start_name, stop_name] (list)\n
     freq_name - name of frequency column (str)\n
-    one_sec_unit - number representing one second of signal - this can\n
+    sec_unit - number representing one second of signal - this can\n
     significantly imporove the speed of this operation
     sec_margin - margin for creating subsets of compared data - should be set\n
     according to the legnth of compared events (1s for HFO should be enough)
@@ -47,8 +47,8 @@ def match_detections(gs_df, dd_df, bn, freq_name = None,
         matched_idcs = []
         gs = [row_gs[1][bn[0]],row_gs[1][bn[1]]]
         if one_sec_unit: # We can create subset - significant speed improvement
-            for row_dd in dd_df[(dd_df[bn[0]] < gs[0]+one_sec_unit*2) &
-                                (dd_df[bn[0]] > gs[0]-one_sec_unit*2)].iterrows(): 
+            for row_dd in dd_df[(dd_df[bn[0]] < gs[0]+sec_unit*sec_margin) &
+                                (dd_df[bn[0]] > gs[0]-sec_unit*sec_margin)].iterrows(): 
                 dd = [row_dd[1][bn[0]],row_dd[1][bn[1]]]
                 if detection_overlap_check(gs, dd):
                     matched_idcs.append(row_dd[0])
