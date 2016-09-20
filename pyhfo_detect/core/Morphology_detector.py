@@ -88,7 +88,9 @@ def morphology_detect(data, fs, low_fc, high_fc, mark,
     filt_data = filtfilt(b, a, data)
     
     # 2) Envelope 
-    env = smooth(np.abs(hilbert(filt_data)),smooth_window * fs)
+    smooth_N = int(smooth_window * fs)
+    env = np.abs(hilbert(filt_data))
+    env = np.convolve(env, np.ones((smooth_N,))/smooth_N, mode='same')
     
     # 3) threshold
     thr, thr_filt, indHighEntr = baseline_threshold(data, filt_data, env,
@@ -227,23 +229,6 @@ def ecdf(x):
     xs = np.sort(x)
     ys = np.arange(1, len(xs)+1)/float(len(xs))
     return xs, ys
-
-def smooth(data,N):
-    """
-    Function to smooth the signal by running mean.
-    
-    Parameters:
-    -----------
-    data(array) - data to be smoothed.\n
-    N(int) - sliding window size\n
-    
-    Returns:
-    --------
-    smoothed_data(array)\n
-    """
-    
-    cumsum = np.cumsum(np.insert(data, 0, 0)) 
-    return (cumsum[N:] - cumsum[:-N]) / N 
 
 def baseline_threshold(data, filt_data, env,
                        bs_dur, bl_mu, bl_border, bl_mindist, maxNoiseuV,
