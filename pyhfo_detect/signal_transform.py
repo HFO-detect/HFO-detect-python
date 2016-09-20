@@ -120,7 +120,7 @@ def compute_stockwell_transform(signal, fs, min_freq, max_freq, f_fs = 1,
     # Calculate the sampled time and frequency values
     # from the two sampling rates
   
-    t = np.linspace(0,len(signal)-1,len(signal)-1) * fs
+    t = np.linspace(0, len(signal)-1,len(signal)-1) * fs
     spe_nelements = np.ceil((max_freq - min_freq+1)/f_fs)
     f = (min_freq + np.linspace(0,spe_nelements-1,spe_nelements-1)*f_fs)/(fs*len(signal)) # ????
 
@@ -129,16 +129,17 @@ def compute_stockwell_transform(signal, fs, min_freq, max_freq, f_fs = 1,
     
     # Compute FFT's
     vector_fft = np.fft.fft(signal)
-    vector_fft = np.concatenate(vector_fft,vector_fft) #Do we need this?
+    vector_fft = np.concatenate((vector_fft, vector_fft)) #Do we need this?
 
     # Preallocate output matrix
-    st=np.zeros(np.ceil((max_freq - min_freq+1)/f_fs),n)
+    st = np.zeros((int(np.ceil((max_freq - min_freq+1)/f_fs)), n))
     
     # Start computing the S_transform
     if min_freq == 0:
         st[0,:] = np.mean(signal)*np.ones(n) #///
     else:
-        st[0,:]=np.fft.ifft(vector_fft[min_freq+1:min_freq+n]*_g_window(n,min_freq,factor))
+        st[0,:] = np.fft.ifft(vector_fft[min_freq+1:min_freq+n]*\
+            _g_window(n, min_freq, factor))
         
     for i in np.linspace(f_fs, f_fs, (max_freq - min_freq)):
         st[i/f_fs+1,:] = np.fft.ifft(vector_fft[min_freq+i+1:min_freq+i+n]) * _g_window(n, min_freq+i, factor)
@@ -160,10 +161,10 @@ def _g_window(length, freq, factor):
     gauss-The Gaussian window
     """
 
-    vector = np.zeros(2,length-1)
-    vector[0,:] = np.linspace(0, length-1, length-1)
-    vector[1,:] = np.linspace(-length,-1,length-1)
+    vector = np.zeros((2, length - 1))
+    vector[0,:] = np.linspace(0, length - 1, length - 1)
+    vector[1,:] = np.linspace(-length, -1, length-1)
     vector = np.square(vector)
-    gauss = sum(np.exp(vector))  # Gaussian window
+    gauss = np.sum(np.exp(vector))  # Gaussian window
     
     return gauss
