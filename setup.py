@@ -20,12 +20,12 @@ United States
 import os
 from setuptools import setup
 
-def package_tree(pkgroot):
-    path = os.path.dirname(__file__)
-    subdirs = [os.path.relpath(i[0], path).replace(os.path.sep, '.')
-               for i in os.walk(os.path.join(path, pkgroot))
-               if '__init__.py' in i[2]]
-    return subdirs
+#def package_tree(pkgroot):
+#    path = os.path.dirname(__file__)
+#    subdirs = [os.path.relpath(i[0], path).replace(os.path.sep, '.')
+#               for i in os.walk(os.path.join(path, pkgroot))
+#               if '__init__.py' in i[2]]
+#    return subdirs
 
 setup(name='pyhfo_detect',
       version='0.1',
@@ -35,7 +35,8 @@ setup(name='pyhfo_detect',
       #author='Jan Cimbalnik and collaborators',
       #author_email='jan.cimbalnik@fnusa.cz, jan.cimbalnik@mayo.edu',
       #license='BSD 3.0',
-      packages=package_tree('pyhfo_detect'),
+      #packages=package_tree('pyhfo_detect'),
+      package_data={'':['*.pkl']},
       keywords='hfo automated detection',
 #      classifiers=[
 #          'Development Status :: 2 - Pre-Alpha',
