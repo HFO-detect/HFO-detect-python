@@ -26,7 +26,7 @@ from ..io.data_operations import *
 
 # %% Presets - Sergey's custom filter
 mod_dir = os.path.split(__file__)[0]
-filter_coefs = pickle.load(open(mod_dir+'Morphology_detector.pkl','rb'))
+filter_coefs = pickle.load(open(mod_dir+'/Morphology_detector.pkl','rb'))
 
 # %% Morphology detector
 
