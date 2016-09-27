@@ -17,7 +17,7 @@ import pickle,os
 from scipy.signal import butter, filtfilt, hilbert
 import numpy as np
 
-from ..signal_transform import *
+from ..signal_transform import compute_stockwell_transform
 from ..feature_extraction import *
 from ..thresholds import *
 from ..io.data_operations import *
@@ -96,7 +96,9 @@ def morphology_detect(data, fs, low_fc, high_fc, mark,
     thr, thr_filt, indHighEntr = baseline_threshold(data, filt_data, env,
                                                    bs_dur, bl_mu, bl_border,
                                                    bl_mindist, max_noise_uv,
+                                                   cdf_rms, cdf_filt,
                                                    fs, low_fc, high_fc)
+    
                                   
     # Display warning if baseline is too short
     if len(indHighEntr) < 2*fs:
@@ -231,8 +233,8 @@ def ecdf(x):
     return xs, ys
 
 def baseline_threshold(data, filt_data, env,
-                       bs_dur, bl_mu, bl_border, bl_mindist, maxNoiseuV,
-                       cdf_level_filt,
+                       bs_dur, bl_mu, bl_border, bl_mindist, max_noise_uv,
+                       cdf_level_rms, cdf_level_filt,
                        fs, low_fc, high_fc):
     """
     distinguish background activity from spikes-HFO-artifacts
@@ -251,8 +253,7 @@ def baseline_threshold(data, filt_data, env,
     
     """
 
-    # Parameters
-    indHighEntr=np.array([])
+    indHighEntr=np.array([],dtype=np.int64)
     S=np.zeros(fs)
     
     # Check duration
@@ -260,130 +261,131 @@ def baseline_threshold(data, filt_data, env,
     if bs_dur > len(data) / fs:
         bs_dur = np.floor(len(data) / fs)
         
-    for sec in range(len(np.floor(len(data) / fs))):
+    for sec in range(bs_dur):
         
         signal = data[sec * fs : (sec + 1) * fs]
                       
         # S transform
-        ST_data = stockwell_transform(signal, low_fc+1, high_fc, 1/fs, 1)
+        ST_data = compute_stockwell_transform(signal, fs, low_fc+1, high_fc, 1)[0]
         stda = np.square(np.abs(ST_data))
         
         # Stockwell entropy
-        std_total = np.sum(stda)  # Total energy
+        std_total = np.sum(stda,0)  # Total energy
         std_rel = stda / std_total
         
         # Total entropy
         S = []
-        for ifr in std_rel:
-            S.append(-sum(ifr) * np.log(ifr))
+        for ifr in range(np.size(std_rel,1)):
+            S.append(-sum(std_rel[:,ifr] * np.log(std_rel[:,ifr])))
         
-        Smax=np.log(np.size(stda, 1)) # maximum entrophy = log(f_ST), /mu in mni,
+        Smax=np.log(np.size(stda, 0)) # maximum entrophy = log(f_ST), /mu in mni,
         
         ### Threshold and baseline ###
         
         thr=bl_mu*Smax # threshold at mu*Smax, in mni BLmu=0.67
-        indAboveThr=(S>thr) # find pt with high entrophy
+        indAboveThr=np.where(S>thr)[0] # find pt with high entrophy
+        indAboveThr += 1 # Had to do this because matlab is stupid!
         
-        if indAboveThr:
-            # FIXME - could we eliminate one if?
+        if len(indAboveThr):
             # dont take border points because of stockwell transf
-            indAboveThr=indAboveThr[~indAboveThr<(fs * bl_border)]
-            indAboveThr=indAboveThr[~indAboveThr>(fs * (1-bl_border))]
-
-            if indAboveThr:
-
+            indAboveThr=indAboveThr[~(indAboveThr<(fs * bl_border))]
+            indAboveThr=indAboveThr[~(indAboveThr>(fs * (1-bl_border)))]
+    
+            if len(indAboveThr):
+    
                 # check for the length
                 indAboveThrN = indAboveThr[1:]
-                indBrake = np.where(indAboveThrN - indAboveThrN[:-1] > 1)
+                indBrake = np.where(indAboveThrN - indAboveThr[:-1] > 1)[0]
     
-                # check if it starts already above or the last point is abover the threshold
+                # check if it starts already above or the last point is above the threshold
     
-                if indAboveThr[0] == fs * bl_border: #??? This should not happen!!!
-                    indBrake = indBrake[1:]
-                if indAboveThr[-1] == fs * (1-bl_border): #??? Neither should this happen!!!
-                    indBrake = indBrake[:-1]
+                if indAboveThr[0] == fs * bl_border:
+                    indBrake = np.concatenate(([0],indBrake))
+                if indAboveThr[-1] == fs * (1-bl_border):
+                    indBrake = np.concatenate((indBrake,[len(indAboveThr)-1]))
                 
                 if np.size(indBrake) == 0:
                     indBrake = len(indAboveThr)
                     
-            for iper in range(indBrake[:-1]):
-                j = np.arange(indBrake[iper]+1,indBrake[iper+1])
+            for iper in range(len(indBrake[:-1])):
+                j = np.arange(indBrake[iper]+1,indBrake[iper+1]+1)
                 if len(j) >= bl_mindist:
-                    indAboveThr[j] = indAboveThr[j] + (sec-1) *fs
-                    if sum(abs(filt_data[indAboveThr[j]])) <= maxNoiseuV:  # % check that filtered signal is below max Noise level
+                    indAboveThr[j] = indAboveThr[j] + ((sec*fs)-1)
+                    if not sum(abs(filt_data[indAboveThr[j]]) > max_noise_uv):  # % check that filtered signal is below max Noise level
                         indHighEntr = np.concatenate([indHighEntr,indAboveThr[j]])
-                    
-                    
+                          
+    print('For '+str(bs_dur)+' sec, baseline length '+str(len(indHighEntr)/fs)+' sec')
+                        
     ### check one more time if the lentgh of baseline is too small ###
     if len(indHighEntr) < 2*fs:
         print('Baseline length < 2 sec, calculating for 5 min ')
         
-        for sec in range(len(np.floor(len(data) / fs))):
+        for sec in range(bs_dur,int(np.floor(len(data) / fs))):
         
             signal = data[sec * fs : (sec + 1) * fs]
-                          
+                      
             # S transform
-            ST_data = stockwell_transform(signal, low_fc+1, high_fc, 1/fs, 1)
+            ST_data = compute_stockwell_transform(signal, fs, low_fc+1, high_fc, 1)[0]
             stda = np.square(np.abs(ST_data))
             
             # Stockwell entropy
-            std_total = np.sum(stda)  # Total energy
+            std_total = np.sum(stda,0)  # Total energy
             std_rel = stda / std_total
             
             # Total entropy
             S = []
-            for ifr in std_rel:
-                S.append(-sum(ifr) * np.log(ifr))
+            for ifr in range(np.size(std_rel,1)):
+                S.append(-sum(std_rel[:,ifr] * np.log(std_rel[:,ifr])))
             
-            Smax=np.log(np.size(stda, 1)) # maximum entrophy = log(f_ST), /mu in mni,
+            Smax=np.log(np.size(stda, 0)) # maximum entrophy = log(f_ST), /mu in mni,
             
             ### Threshold and baseline ###
             
             thr=bl_mu*Smax # threshold at mu*Smax, in mni BLmu=0.67
-            indAboveThr=(S>thr) # find pt with high entrophy
+            indAboveThr=np.where(S>thr)[0] # find pt with high entrophy
+            indAboveThr += 1 # Had to do this because matlab is stupid!
             
-            if indAboveThr:
-                # FIXME - could we eliminate one if?
+            if len(indAboveThr):
                 # dont take border points because of stockwell transf
-                indAboveThr=indAboveThr[~indAboveThr<(fs * bl_border)]
-                indAboveThr=indAboveThr[~indAboveThr>(fs * (1-bl_border))]
-    
-                if indAboveThr:
-    
+                indAboveThr=indAboveThr[~(indAboveThr<(fs * bl_border))]
+                indAboveThr=indAboveThr[~(indAboveThr>(fs * (1-bl_border)))]
+        
+                if len(indAboveThr):
+        
                     # check for the length
                     indAboveThrN = indAboveThr[1:]
-                    indBrake = np.where(indAboveThrN - indAboveThrN[:-1] > 1)
+                    indBrake = np.where(indAboveThrN - indAboveThr[:-1] > 1)[0]
         
-                    # check if it starts already above or the last point is abover the threshold
+                    # check if it starts already above or the last point is above the threshold
         
-                    if indAboveThr[0] == fs * bl_border: #??? This should not happen!!!
-                        indBrake = indBrake[1:]
-                    if indAboveThr[-1] == fs * (1-bl_border): #??? Neither should this happen!!!
-                        indBrake = indBrake[:-1]
+                    if indAboveThr[0] == fs * bl_border:
+                        indBrake = np.concatenate(([0],indBrake))
+                    if indAboveThr[-1] == fs * (1-bl_border):
+                        indBrake = np.concatenate((indBrake,[len(indAboveThr)-1]))
                     
                     if np.size(indBrake) == 0:
                         indBrake = len(indAboveThr)
                         
-                for iper in range(indBrake[:-1]):
-                    j = np.arange(indBrake[iper]+1,indBrake[iper+1])
+                for iper in range(len(indBrake[:-1])):
+                    j = np.arange(indBrake[iper]+1,indBrake[iper+1]+1)
                     if len(j) >= bl_mindist:
-                        indAboveThr[j] = indAboveThr[j] + (sec-1) *fs
-                        if sum(abs(filt_data[indAboveThr[j]])) <= maxNoiseuV:  # % check that filtered signal is below max Noise level
+                        indAboveThr[j] = indAboveThr[j] + ((sec*fs)-1)
+                        if not sum(abs(filt_data[indAboveThr[j]]) > max_noise_uv):  # % check that filtered signal is below max Noise level
                             indHighEntr = np.concatenate([indHighEntr,indAboveThr[j]])
-                            
-    print('For '+str(npfloor(len(data)/fs))+' sec, baseline length '+str(len(indHighEntr)/fs)+' sec')
+                                                    
+        print('For '+str(np.floor(len(data)/fs))+' sec, baseline length '+str(len(indHighEntr)/fs)+' sec')
     
     if len(indHighEntr):
         xs, ys = ecdf(env[indHighEntr])
-        thr_cdf = xs[ys>cdf_level_filt]
+        thr_cdf = xs[[ys>cdf_level_rms]][0]
     else:
         thr_cdf = 1000
         
     thr = thr_cdf
     
     if len(indHighEntr):
-        xs, ys = ecdf(filt_data(indHighEntr))
-        thr_cdf = xs[ys>cdf_level_filt]
+        xs, ys = ecdf(filt_data[indHighEntr])
+        thr_cdf = xs[[ys>cdf_level_filt]][0]
     else:
         thr_cdf = 1000
         
