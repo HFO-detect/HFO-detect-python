@@ -46,7 +46,7 @@ def match_detections(gs_df, dd_df, bn, freq_name = None,
     for row_gs in gs_df.iterrows():
         matched_idcs = []
         gs = [row_gs[1][bn[0]],row_gs[1][bn[1]]]
-        if one_sec_unit: # We can create subset - significant speed improvement
+        if sec_unit: # We can create subset - significant speed improvement
             for row_dd in dd_df[(dd_df[bn[0]] < gs[0]+sec_unit*sec_margin) &
                                 (dd_df[bn[0]] > gs[0]-sec_unit*sec_margin)].iterrows(): 
                 dd = [row_dd[1][bn[0]],row_dd[1][bn[1]]]
