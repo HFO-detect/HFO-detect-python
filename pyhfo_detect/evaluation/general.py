@@ -32,7 +32,7 @@ def match_detections(gs_df, dd_df, bn, freq_name = None,
     bn - names of event start stop [start_name, stop_name] (list)\n
     freq_name - name of frequency column (str)\n
     sec_unit - number representing one second of signal - this can\n
-    significantly imporove the speed of this operation
+    significantly imporove the speed of this operation\n
     sec_margin - margin for creating subsets of compared data - should be set\n
     according to the legnth of compared events (1s for HFO should be enough)
     

@@ -39,7 +39,7 @@ def create_precision_recall_curve(gs_df, dd_df, bn, threshold,
     bn - names of event start stop [start_name, stop_name] (list)\n
     threshold - name of the threshold field for evaluation
     sec_unit - number representing one second of signal - this can\n
-    significantly imporove the speed of this operation
+    significantly imporove the speed of this operation\n
     sec_margin - margin for creating subsets of compared data - should be set\n
     according to the legnth of compared events (1s for HFO should be enough)
     
@@ -88,7 +88,7 @@ def calculate_precision_recall(gs_df, dd_df, bn,
     dd_df - automatically detected detections\n
     bn - names of event start stop [start_name, stop_name] (list)\n
     sec_unit - number representing one second of signal - this can\n
-    significantly imporove the speed of this operation
+    significantly imporove the speed of this operation\n
     sec_margin - margin for creating subsets of compared data - should be set\n
     according to the legnth of compared events (1s for HFO should be enough)
     
