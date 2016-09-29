@@ -22,7 +22,15 @@ from ..io.data_operations import *
 def rms_detect(data, fs, low_fc, high_fc,
                threshold, window_size, window_overlap):
     """
-    Toot mean square detection algorithm. (CITATIONS)
+    Root mean square detection algorithm (basic).
+    
+    [1] STABA, Richard J, Charles L WILSON, Anatol BRAGIN, Itzhak FRIED\n
+    and Jerome ENGEL. Quantitative Analysis of High-Frequency Oscillations \n
+    (80 − 500 Hz) Recorded in Human Epileptic Hippocampus and Entorhinal\n
+    Cortex. Journal of neurophysiology. 2002, vol. 88, pp. 1743–1752.\n
+    
+    Also used in: Staba, et al., 2004; Staba, et al., 2007;\n
+    Blanco, et al., 2010; Blanco, et al., 2011;\n
     
     Parameters:
     -----------

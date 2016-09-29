@@ -22,7 +22,15 @@ from ..io.data_operations import *
 def ll_detect(data, fs, low_fc, high_fc,
               threshold, window_size, window_overlap):
     """
-    Line-length detection algorithm. (CITATIONS)
+    Line-length detection algorithm (basic).
+    
+    GARDNER, Andrew B, Gregory A WORRELL, Eric MARSH, Dennis DLUGOS and \n
+    Brian LITT. Human and automated detection of high-frequency oscillations\n
+    in clinical intracranial EEG recordings. Clinical Neurophysiology\n
+    [online]. 2007, vol. 118, pp. 1134–1143.\n
+    
+    Also used in: Worrell, et al., 2008; Akiyama, et al., 2011;\n
+    
     
     Parameters:
     -----------

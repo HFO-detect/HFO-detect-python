@@ -38,7 +38,11 @@ def morphology_detect(data, fs, low_fc, high_fc, mark,
     Morphology detector by Sergey Burnos et al.\n
     Please cite!\n
     \n
-    Burnos et al., 2016 Clinical Neurophysiology\n
+    [1] BURNOS, Sergey, Birgit FRAUSCHER, Rina ZELMANN, Claire HAEGELEN, \n
+    Johannes SARNTHEIN and Jean GOTMAN. The morphology of high frequency \n
+    oscillations (HFO) does not improve delineating the epileptogenic zone. \n
+    Clinical Neurophysiology [online]. 2016, pp. 1–9. ISSN 13882457. \n
+    Available at: doi:10.1016/j.clinph.2016.01.002
     \n
     
     Parameters:
