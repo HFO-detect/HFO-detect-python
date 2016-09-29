@@ -139,7 +139,7 @@ def compute_stockwell_transform(signal, fs, min_freq, max_freq, f_fs = 1,
     
     # Start computing the S_transform
     if min_freq == 0:
-        st[0,:] = np.mean(signal)*np.ones(n) #///
+        st[0,:] = np.mean(signal)*np.ones(n)
     else:
         st[0,:] = np.fft.ifft(vector_fft[min_freq:min_freq+n]*\
                               _g_window(n, min_freq, factor))

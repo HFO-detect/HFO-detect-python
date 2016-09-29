@@ -112,31 +112,31 @@ def morphology_detect(data, fs, low_fc, high_fc, mark,
     pred_env[0] = pred_env[1]
 
 
-    t1 = np.where(pred_env < (thr * dur_th) & env >= (thr * dur_thr))
-    t2 = np.where(pred_env > (thr * dur_th) & env <= (thr * dur_thr))
-
-    trig = np.where(pred_env < thr & env >= thr)
-    trig_end = np.where(pred_enc >= thr & env < thr)
+    t1 = np.where((pred_env < (thr * dur_th)) & (env >= (thr * dur_th)))[0]
+    t2 = np.where((pred_env > (thr * dur_th)) & (env <= (thr * dur_th)))[0]
+    
+    trig = np.where((pred_env < thr) & (env >= thr))[0]
+    trig_end = np.where((pred_env >= thr) & (env < thr))[0]
 
     det_cnt = 0
-    
+
     for trigs in zip(trig, trig_end):
         if trigs[1] - trigs[0] >= time_th:
             
-            k = np.where(t1 <= trigs[0] & t2 >= trigs[0])
+            k = np.where((t1 <= trigs[0]) & (t2 >= trigs[0]))[0][0]
             
             if t1[k] > 0:
                 det_start = t1[k]
             else:
                 det_start = 0
                 
-            if t2[k] <= len(env):
+            if t2[k] < len(env):
                 det_stop = t2[k]
             else:
-                det_stop = len(env)
+                det_stop = len(env)-1
                 
             peak_amp = np.max(env[t1[k]:t2[k]])
-            peak_ind = np.argmax(env[t1[k]:t2[k]])
+            peak_ind = np.argmax(env[t1[k]:t2[k]]) + t1[k] + 1
             
             if peak_amp > max_amp_filt:
                 continue
@@ -145,8 +145,8 @@ def morphology_detect(data, fs, low_fc, high_fc, mark,
             det_cnt += 1
             
     if det_cnt:
-        df_out = check_oscillations(df_out, filt_data, thr_filt, min_N_osc) #FIXME - should this be a general function?
-        df_out = join_detections(df_out, max_gap) #FIXME - this should be general function
+        df_out = check_oscillations(df_out, filt_data, thr_filt, min_N_osc)
+        df_out = join_detections(df_out, max_gap, fs) #FIXME - this should be general function
         
     return df_out
     
@@ -163,18 +163,18 @@ def check_oscillations(df, data, thr_filt, min_N_osc):
     for row in df.iterrows():
         # Detrend data
         to_detrend = 0
-        
+    
         # Get eeg interval
-        interval_eeg = data[row[1].event_start:row[1].event_stop] - to_detrend
+        interval_eeg = data[int(row[1].event_start):int(row[1].event_stop)+1] - to_detrend
         
         # Compute absolute values for oscillations interval
         abs_eeg = np.abs(interval_eeg)
         
         # Look for zeros
-        zero_vec = np.argmax(interval_eeg[:-1] * interval_eeg[1:] < 0)
+        zero_vec = np.where(interval_eeg[:-1] * interval_eeg[1:] < 0)[0]
         N_zeros = len(zero_vec)
         
-        N_max_counter = np.zeros(N_zeros)
+        N_max_counter = np.zeros(N_zeros-1)
         
         if N_zeros:
             for zi, z in enumerate(zero_vec[:-1]):
@@ -190,23 +190,25 @@ def check_oscillations(df, data, thr_filt, min_N_osc):
         N_max_counter = np.concatenate([[0],N_max_counter,[0]])
         
         # NOTE: inversed logic from the original code - is more readable this way
-        if not True in (np.diff(np.where(N_max_counter==0)) > min_N_osc):
+        if not np.any((np.diff(np.where(N_max_counter==0)[0]) > min_N_osc)):
             rejected_idcs.append(row[0])
             
     # Get rid of detections that did not have enough oscillations
     df = df.loc[~df.index.isin(rejected_idcs)]
-    df = df.reindex()
+    df.reset_index(drop=True, inplace=True) 
         
     return df
 
-def join_detections(df, max_gap):
+def join_detections(df, max_gap, fs):
     """
     Function to join detections.
     """
     
     N_det_c = 0    
+    max_gap = max_gap * fs
     
-    joined_df = df[0:1]  
+    joined_df = df[0:1]
+    joined_df.reset_index(drop=True, inplace=True) 
     
     for row in df[1:].iterrows():
         # Join detection
@@ -216,13 +218,13 @@ def join_detections(df, max_gap):
             if n_diff < max_gap:
                 joined_df.loc[N_det_c,'event_stop'] = row[1].event_stop
                 
-            if joined_df.loc[N_det_c,'peak_amp'] < row[1].peak_amp:
-                joined_df.loc[N_det_c,'peak_amp'] = row[1].peak_amp
-                joined_df.loc[N_det_c,'peak'] = row[1].peak
+                if joined_df.loc[N_det_c,'peak_amp'] < row[1].peak_amp:
+                    joined_df.loc[N_det_c,'peak_amp'] = row[1].peak_amp
+                    joined_df.loc[N_det_c,'peak'] = row[1].peak
                 
-        else:
-            N_det_c += 1
-            joined_df.loc[N_det_c] = row[1]    
+            else:
+                N_det_c += 1
+                joined_df.loc[N_det_c,:] = df.loc[row[0],:]    
             
     return joined_df
             
