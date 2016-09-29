@@ -1,1 +1,0 @@
-Edf sample file of 10s stereo EEG with HFOs occuring mainly in B'1-B'3.
