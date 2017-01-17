@@ -91,13 +91,14 @@ def detection_overlap_check(gs,dd):
 
     overlap = False
 
-    if (dd[1] >= gs[0]) and (dd[1] <= gs[1]): # dd stop in gs
+    if (dd[1] >= gs[0]) and (dd[1] <= gs[1]): # dd stop in gs + (dd inside gs)
         overlap = True
 
-    if (dd[0] >= gs[0]) and (dd[0] <= gs[1]): # dd start in gs
+    if (dd[0] >= gs[0]) and (dd[0] <= gs[1]): # dd start in gs + (dd inside gs)
         overlap = True
 
     if (dd[0] <= gs[0]) and (dd[1] >= gs[1]): # gs inside dd
         overlap = True
+        
 
     return overlap
