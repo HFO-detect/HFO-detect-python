@@ -1,52 +1,8 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2016, HFO-detect Development Team.
 
-
-from . import D_file_read
-import pyedflib
 import pandas as pd
 import numpy as np
-
-
-def data_feeder(file_path, start_samp, stop_samp, channel_name):
-    """
-    Function that specifies file opener based on extension and returns data.
-
-    Parameters:
-    -----------
-    file_path(str) - path to data file\n
-    start_samp(int) - start sample\n
-    stop_samp(int) - stop sample\n
-    channel_name(str) - requested channel\n
-
-    Returns:
-    --------
-    data - requested data\n
-    fs - sampling frequency\n
-    """
-
-    # Parse the file name to get extension
-    ext = file_path[-file_path[::-1].find('.'):]
-
-    # Decide which opener to use and get the data
-    if ext == 'd':
-        sheader, xheader = D_file_read.read_d_header(file_path)
-        fs = sheader['fsamp']
-        ch_idx = xheader['channel_names'].index(channel_name)
-        data = D_file_read.read_d_data(sheader, [ch_idx],
-                                       start_samp, stop_samp)
-
-    elif ext in ['edf','bdf']:
-        if ext == 'edf':
-            f = pyedflib.EdfReader(file_path,3)
-        elif ext == 'bdf':
-            f = pyedflib.EdfReader(file_path,4)
-        ch_idx = [x.decode() for x in f.getSignalLabels()].index(channel_name)
-        fs = f.getSampleFrequency(ch_idx)
-        data = f.readSignal(ch_idx)
-
-    return data, fs
-
 
 def create_output_df(fields=[],dtypes=None):
     """
