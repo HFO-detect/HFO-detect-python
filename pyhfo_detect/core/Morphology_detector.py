@@ -14,15 +14,11 @@ If you use this detector please cite!
 """
 import pickle,os
 
-from scipy.signal import butter, filtfilt, hilbert
+from scipy.signal import filtfilt, hilbert
 import numpy as np
 
 from ..signal_transform import compute_stockwell_transform
-from ..feature_extraction import *
-from ..thresholds import *
-from ..io.data_operations import *
-
-# TODO - finish function help
+from ..io.data_operations import create_output_df
 
 # %% Presets - Sergey's custom filter
 mod_dir = os.path.split(__file__)[0]
@@ -30,7 +26,7 @@ filter_coefs = pickle.load(open(mod_dir+'/Morphology_detector.pkl','rb'))
 
 # %% Morphology detector
 
-def morphology_detect(data, fs, low_fc, high_fc, mark,
+def morphology_detect(data, fs, low_fc, high_fc,
                       bl_mu = .9, cdf_rms = .95, cdf_filt = .99, bs_dur = 30,
                       dur_th = .99, time_th = .02, max_noise_uv = 10.,
                       max_amp = 30., max_gap = .02, min_N_osc = 6):
@@ -57,7 +53,7 @@ def morphology_detect(data, fs, low_fc, high_fc, mark,
     bs_dur(float) - number of seconds for baseline detection\n
     dur_th(float) - duraiton threshold
     
-    max_amp(float) - max event amplitude - artifact rejection\n
+    max_amp(float) - max event amplitude - artifact rejection (default 30 uV)\n
     max_gap(float) - interval for joining events
     min_N_osc(float) - minimum number of oscillations
     
@@ -75,11 +71,6 @@ def morphology_detect(data, fs, low_fc, high_fc, mark,
     smooth_window = 1 / high_fc  # RMS smoothing window
     bl_border = .02  # Ignore bordeers because of ST
     bl_mindist = 10*fs/1e3  # Min distance interval from baseline  
-    
-    if  mark == 'Ripple':
-        max_amp_filt = 30
-    elif mark == 'FastRipple':
-        max_amp_filt = 20
     
     
     # 1) Filtering
@@ -142,14 +133,18 @@ def morphology_detect(data, fs, low_fc, high_fc, mark,
             peak_amp = np.max(env[t1[k]:t2[k]])
             peak_ind = np.argmax(env[t1[k]:t2[k]]) + t1[k] + 1
             
-            if peak_amp > max_amp_filt:
+            if peak_amp > max_amp:
                 continue
             
             df_out.loc[det_cnt] = [det_start, det_stop, peak_ind, peak_amp]
             det_cnt += 1
             
     if det_cnt:
+        
+        # 5) check sufficient number of oscillations
         df_out = check_oscillations(df_out, filt_data, thr_filt, min_N_osc)
+        
+        # 6) Merge detections
         df_out = join_detections(df_out, max_gap, fs) #FIXME - this should be general function
         
     return df_out
@@ -260,7 +255,7 @@ def baseline_threshold(data, filt_data, env,
     """
 
     indHighEntr=np.array([],dtype=np.int64)
-    S=np.zeros(fs)
+    S=np.zeros(int(fs))
     
     # Check duration
     
@@ -269,7 +264,7 @@ def baseline_threshold(data, filt_data, env,
         
     for sec in range(bs_dur):
         
-        signal = data[sec * fs : (sec + 1) * fs]
+        signal = data[int(sec * fs) : int((sec + 1) * fs)]
                       
         # S transform
         ST_data = compute_stockwell_transform(signal, fs, low_fc+1, high_fc, 1)[0]
@@ -328,7 +323,7 @@ def baseline_threshold(data, filt_data, env,
         
         for sec in range(bs_dur,int(np.floor(len(data) / fs))):
         
-            signal = data[sec * fs : (sec + 1) * fs]
+            signal = data[int(sec * fs) : int((sec + 1) * fs)]
                       
             # S transform
             ST_data = compute_stockwell_transform(signal, fs, low_fc+1, high_fc, 1)[0]

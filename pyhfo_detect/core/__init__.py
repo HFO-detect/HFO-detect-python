@@ -2,3 +2,4 @@
 
 from .LL_detectors import ll_detect
 from .RMS_detectors import rms_detect
+from .Morphology_detector import morphology_detect

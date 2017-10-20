@@ -10,12 +10,10 @@ Root mean square detection algorithm and its variants.
 
 
 from scipy.signal import butter, filtfilt
-import numpy as np
 
-from ..signal_transform import *
-from ..feature_extraction import *
-from ..thresholds import *
-from ..io.data_operations import *
+from ..feature_extraction import extract_rms
+from ..thresholds import th_std
+from ..io.data_operations import create_output_df
 
 # %% RMS detector
 
