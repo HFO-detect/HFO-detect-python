@@ -56,6 +56,7 @@ def compute_rms(signal, window_size = 6):
         signal - numpy array
         window_size - number of the points of the window
     '''
+    window_size = int(window_size)
     aux = np.power(signal,2)
     window = np.ones(window_size)/float(window_size)
     return np.sqrt(np.convolve(aux, window, 'same'))
@@ -71,6 +72,7 @@ def compute_stenergy(signal, window_size = 6):
         signal - numpy array
         window_size - number of the points of the window
     '''
+    window_size = int(window_size)
     aux = np.power(signal,2)
     window = np.ones(window_size)/float(window_size)
     return np.convolve(aux, window, 'same')
@@ -86,6 +88,7 @@ def compute_line_lenght(signal, window_size = 6):
         signal - numpy array
         window_size - number of the points of the window
     '''
+    window_size = int(window_size)
     aux = np.abs(np.diff(signal))
     window = np.ones(window_size)/float(window_size)
     data =  np.convolve(aux, window, 'same')
@@ -152,6 +155,9 @@ def compute_stockwell_transform(signal, fs, min_freq, max_freq, f_fs = 1,
         
     return st, t, f
         
+# =============================================================================
+# Auxiliary functions
+# =============================================================================
 
 def _g_window(length, freq, factor):
     """
