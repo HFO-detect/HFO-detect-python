@@ -18,7 +18,7 @@ Rochester, MN
 United States
 """
 
-from .general import detection_overlap_check
+from .util import detection_overlap_check
 
 """
 NOTE: we could use scikit-learn for this but that would require additional

@@ -18,7 +18,7 @@ Rochester, MN
 United States
 """
 
-from .general import match_detections
+from .util import match_detections
 
 from scipy.stats import ttest_1samp
 
