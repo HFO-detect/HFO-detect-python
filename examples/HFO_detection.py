@@ -12,7 +12,8 @@ Script load file, detect and dump to pandas dataframe
 import os, requests, tempfile, pickle
 
 from pyhfo_detect.io import add_metadata
-from pyhfo_detect.core import ll_detect, rms_detect, morphology_detect
+from pyhfo_detect.core import (ll_detect, rms_detect, morphology_detect,
+                               cs_detect_beta)
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -57,6 +58,7 @@ fs = fsamps[channels.index(met_dat['channel_name'])]
 LL_df = ll_detect(data, fs, 80, 600, 1, 0.1, 0.25)
 RMS_df = rms_detect(data, fs, 80, 600, 1, 0.1, 0.25)
 Mor_df = morphology_detect(data, fs, 80, 600)
+CS_df = cs_detect_beta(data, fs, 80, 600, 0.1)
 
 
 # The dataframe now containes starts / stops of detections
@@ -67,14 +69,17 @@ Mor_df = morphology_detect(data, fs, 80, 600)
 LL_df = add_metadata(LL_df,met_dat)
 RMS_df = add_metadata(RMS_df,met_dat)
 Mor_df = add_metadata(Mor_df,met_dat)
+CS_df = add_metadata(CS_df,met_dat)
 
 
 # %% Optional rearange columns
 LL_df = LL_df.loc[:,['pat_id','channel_name','event_start','event_stop']]
 RMS_df = RMS_df.loc[:,['pat_id','channel_name','event_start','event_stop']]
 Mor_df = Mor_df.loc[:,['pat_id','channel_name','event_start','event_stop']]
+CS_df = CS_df.loc[:,['pat_id','channel_name','event_start','event_stop']]
 
-det_dfs = [LL_df, RMS_df, Mor_df]
+
+det_dfs = [LL_df, RMS_df, Mor_df, CS_df]
 
 # %% Plot the detections in signal
 
