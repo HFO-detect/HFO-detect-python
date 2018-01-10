@@ -18,7 +18,7 @@ from scipy.signal import filtfilt, hilbert
 import numpy as np
 
 from ..signal_transform import compute_stockwell_transform
-from ..io.data_operations import create_output_df
+from ..io.data_operations import create_output_df, correct_boundary_dtype
 
 # %% Presets - Sergey's custom filter
 mod_dir = os.path.split(__file__)[0]
@@ -147,6 +147,7 @@ def morphology_detect(data, fs, low_fc, high_fc,
         # 6) Merge detections
         df_out = join_detections(df_out, max_gap, fs) #FIXME - this should be general function
         
+    correct_boundary_dtype(df_out)
     return df_out
     
 # %% Helper functions for morphology detect
