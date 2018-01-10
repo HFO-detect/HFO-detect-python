@@ -2,9 +2,8 @@
 # Copyright (c) 2016, HFO-detect Development Team.
 
 import pandas as pd
-import numpy as np
 
-def create_output_df(fields=[],dtypes=None):
+def create_output_df(fields=[]):
     """
     Function to create a custom pandas dataframe depending on the algorithm
     needs. Fields: event_start,event_stop preset.
@@ -12,25 +11,14 @@ def create_output_df(fields=[],dtypes=None):
     Parameters:
     -----------
     fields(list) - additional fields for the dataframe\n
-    dtypes(dict) - dictionary with dtypes for specified fields (optional)\n
     
     Returns:
     --------
     dataframe - pandas dataframe for deteciton insertion\n
     """
     
-    # Preset dtypes
-    dtype_dict = {'event_start':np.int64, 'event_stop':np.int64} 
-                  
-    if dtypes is not None:
-        dtype_dict.update(dtypes)
-    
     out_df = pd.DataFrame(columns=['event_start', 'event_stop']+fields)
-                                   
-    for col in out_df.columns:
-        if col in dtype_dict.keys():
-            out_df[col] = out_df[col].astype(dtype_dict[col])
-            
+
     return out_df
             
 def add_metadata(df,metadata):
@@ -51,4 +39,12 @@ def add_metadata(df,metadata):
         df[key] = metadata[key]
         
     return df
+
+def correct_boundary_dtype(df):
+    """
+    Corrects data type of event_start and event_stop columns
+    """
+    df['event_start'] = df['event_start'].astype('int64')
+    df['event_stop'] = df['event_stop'].astype('int64')
         
+    return
