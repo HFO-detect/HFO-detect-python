@@ -20,23 +20,24 @@ United States
 import os
 from setuptools import setup
 
-#def package_tree(pkgroot):
-#    path = os.path.dirname(__file__)
-#    subdirs = [os.path.relpath(i[0], path).replace(os.path.sep, '.')
-#               for i in os.walk(os.path.join(path, pkgroot))
-#               if '__init__.py' in i[2]]
-#    return subdirs
+def package_tree(pkgroot):
+    path = os.path.dirname(__file__)
+    subdirs = [os.path.relpath(i[0], path).replace(os.path.sep, '.')
+               for i in os.walk(os.path.join(path, pkgroot))
+               if '__init__.py' in i[2]]
+    return subdirs
 
 setup(name='pyhfo_detect',
       version='0.1',
-      install_requires=['pandas','pyedflib','numpy','scipy'],
+      install_requires=['pandas','numpy','scipy'],
       description='Collection of (semi)automated detectors of HFO',
-      #url='http://github.com/cimbi/pancircs',
-      #author='Jan Cimbalnik and collaborators',
-      #author_email='jan.cimbalnik@fnusa.cz, jan.cimbalnik@mayo.edu',
-      #license='BSD 3.0',
-      #packages=package_tree('pyhfo_detect'),
-      package_data={'':['*.pkl']},
+      url='http://github.com/cimbi/HFO-detect/HFO-detect-python',
+      author='Jan Cimbalnik and collaborators',
+      author_email='jan.cimbalnik@fnusa.cz, jan.cimbalnik@mayo.edu',
+      license='BSD 3.0',
+      #packages=find_packages('pyhfo_detect'),
+      packages=package_tree('pyhfo_detect'),
+      package_data={'pyhfo_detect':['core/*.pkl']},
       keywords='hfo automated detection',
 #      classifiers=[
 #          'Development Status :: 2 - Pre-Alpha',
