@@ -13,7 +13,7 @@ import os, requests, tempfile, pickle
 
 from pyhfo_detect.io import add_metadata
 from pyhfo_detect.core import (ll_detect, rms_detect, morphology_detect,
-                               cs_detect_beta)
+                               cs_detect_beta, hilbert_detector_1_0)
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -59,7 +59,7 @@ LL_df = ll_detect(data, fs, 80, 600, 1, 0.1, 0.25)
 RMS_df = rms_detect(data, fs, 80, 600, 1, 0.1, 0.25)
 Mor_df = morphology_detect(data, fs, 80, 600)
 CS_df = cs_detect_beta(data, fs, 80, 600, 0.1)
-
+Hilbert_df = hilbert_detector_1_0(data, fs, 80, 600, 3)
 
 # The dataframe now containes starts / stops of detections
 
@@ -70,6 +70,7 @@ LL_df = add_metadata(LL_df,met_dat)
 RMS_df = add_metadata(RMS_df,met_dat)
 Mor_df = add_metadata(Mor_df,met_dat)
 CS_df = add_metadata(CS_df,met_dat)
+Hilbert_df = add_metadata(Hilbert_df,met_dat)
 
 
 # %% Optional rearange columns
@@ -77,21 +78,24 @@ LL_df = LL_df.loc[:,['pat_id','channel_name','event_start','event_stop']]
 RMS_df = RMS_df.loc[:,['pat_id','channel_name','event_start','event_stop']]
 Mor_df = Mor_df.loc[:,['pat_id','channel_name','event_start','event_stop']]
 CS_df = CS_df.loc[:,['pat_id','channel_name','event_start','event_stop']]
+Hilbert_df = Hilbert_df.loc[:,['pat_id','channel_name','event_start','event_stop']]
 
 
-det_dfs = [LL_df, RMS_df, Mor_df, CS_df]
+det_dfs = [LL_df, RMS_df, Mor_df, CS_df, Hilbert_df]
+det_names = ['LL','RMS','Morphology','CS','Hilbert']
 
 # %% Plot the detections in signal
 
-f, axes_arr = plt.subplots(len(det_dfs), sharex = True)
+f, axes_arr = plt.subplots(len(det_dfs), sharex = True, sharey= True)
 
-for a,df in zip(axes_arr, det_dfs):
+for a,df, name in zip(axes_arr, det_dfs, det_names):
     a.plot(data)
     for row in df.iterrows():
         det_size = row[1].event_stop-row[1].event_start
         a.plot(np.linspace(row[1].event_start,row[1].event_stop,det_size,endpoint=False),
              data[row[1].event_start:row[1].event_stop],
              'r-')
+        plt.title(name)
 
 
 
