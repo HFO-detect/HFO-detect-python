@@ -9,7 +9,7 @@ Script load file, detect and dump to pandas dataframe
 @author: jan_cimbalnik
 """
 
-import os, requests, tempfile, pickle
+import os, requests, tempfile, pickle, time
 
 from pyhfo_detect.io import add_metadata
 from pyhfo_detect.core import (ll_detect, rms_detect, morphology_detect,
@@ -55,11 +55,25 @@ data = data_arr[channels.index(met_dat['channel_name'])]
 fs = fsamps[channels.index(met_dat['channel_name'])]
 
 # %% We have data call the core of the algorithm and get detections
+t = time.time()
 LL_df = ll_detect(data, fs, 80, 600, 1, 0.1, 0.25)
+print("Line-length detector execution time:",time.time() - t,"s")
+
+t = time.time()
 RMS_df = rms_detect(data, fs, 80, 600, 1, 0.1, 0.25)
+print("RMS detector execution time:",time.time() - t,"s")
+
+t = time.time()
 Mor_df = morphology_detect(data, fs, 80, 600)
+print("Morphology detector execution time:",time.time() - t,"s")
+
+t = time.time()
 CS_df = cs_detect_beta(data, fs, 80, 600, 0.1)
+print("CS detector execution time:",time.time() - t,"s")
+
+t = time.time()
 Hilbert_df = hilbert_detector_1_0(data, fs, 80, 600, 3)
+print("Hilbert detector execution time:",time.time() - t,"s")
 
 # The dataframe now containes starts / stops of detections
 
