@@ -28,7 +28,7 @@ def package_tree(pkgroot):
     return subdirs
 
 setup(name='pyhfo_detect',
-      version='0.1',
+      version='0.2',
       install_requires=['pandas','numpy','scipy'],
       description='Collection of (semi)automated detectors of HFO',
       url='http://github.com/cimbi/HFO-detect/HFO-detect-python',
