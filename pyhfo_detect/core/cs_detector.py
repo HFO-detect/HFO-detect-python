@@ -443,28 +443,47 @@ def sliding_snr(np_x,bp_x,Fs,wind_secs):
     snr[:half_wind] = (np_rms / bp_rms)
 
     #Slide the window
-    i = 1
-    for k in range(int(N-wind+1)):
-        p = k + wind - 1
-
-        #Beginning of the window
-        t1 = np_x[i]
-        npxx = npxx - (t1 * t1)
-        t2 = bp_x[i] - t1
-        bpxx = bpxx - (t2 * t2)
-
-        #End of the window
-        t1 = np_x[p]
-        npxx = npxx + (t1 * t1)
-        t2 = bp_x[p] - t1
-        bpxx = bpxx + (t2 * t2)
-
-        np_rms = np.sqrt(float(npxx) / wind) # Unnecessary to divide by wind
-        bp_rms = np.sqrt(float(bpxx) / wind)
-
-        snr[k+half_wind] = (np_rms/bp_rms)
-
-        i += 1
+    
+    np_x_sqr = np.square(np_x)
+    np_bp_x_diff_sqr = np.square(bp_x - np_x)
+    
+    if wind%2:
+        np_x_sqr_diffs = np_x_sqr[2*half_wind:] - np_x_sqr[1:-((2*half_wind)-1)]
+        np_bp_x_diff_sqr_diffs = np_bp_x_diff_sqr[2*half_wind:] - np_bp_x_diff_sqr[1:-((2*half_wind)-1)]
+    else:
+        np_x_sqr_diffs = np_x_sqr[2*half_wind-1:-1] - np_x_sqr[1:-((2*half_wind)-1)]
+        np_bp_x_diff_sqr_diffs = np_bp_x_diff_sqr[2*half_wind-1:-1] - np_bp_x_diff_sqr[1:-((2*half_wind)-1)]
+    
+    npxx_sig = np.cumsum(np_x_sqr_diffs)+npxx
+    bpxx_sig = np.cumsum(np_bp_x_diff_sqr_diffs)+bpxx
+    
+    snr[half_wind:-half_wind] = npxx_sig / bpxx_sig
+    
+    # ----- Original code -----
+#     Slide the window
+#    i = 1
+#    for k in range(int(N-wind+1)):
+#        p = k + wind - 1
+#
+#        #Beginning of the window
+#        t1 = np_x[i]
+#        npxx = npxx - (t1 * t1)
+#        t2 = bp_x[i] - t1
+#        bpxx = bpxx - (t2 * t2)
+#
+#        #End of the window
+#        t1 = np_x[p]
+#        npxx = npxx + (t1 * t1)
+#        t2 = bp_x[p] - t1
+#        bpxx = bpxx + (t2 * t2)
+#
+#        np_rms = np.sqrt(float(npxx) / wind) # Unnecessary to divide by wind
+#        bp_rms = np.sqrt(float(bpxx) / wind)
+#
+#        snr[k+half_wind] = (np_rms/bp_rms)
+#
+#        i += 1
+    # ----- -----
 
     #Fill in the end
     snr[-half_wind:] = snr[-(half_wind+1)]
