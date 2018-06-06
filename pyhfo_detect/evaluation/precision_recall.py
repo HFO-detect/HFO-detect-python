@@ -28,7 +28,8 @@ switch to this.
 """
 
 def create_precision_recall_curve(gs_df, dd_df, bn, threshold,
-                                  sec_unit = None, sec_margin = 1):
+                                  sec_unit = None, sec_margin = 1,
+                                  eval_type = 'equal'):
     """
     Function to create precision recall curve.
     
@@ -37,21 +38,25 @@ def create_precision_recall_curve(gs_df, dd_df, bn, threshold,
     gs_df - gold standard detections\n
     dd_df - automatically detected detections\n
     bn - names of event start stop [start_name, stop_name] (list)\n
-    threshold - name of the threshold field for evaluation
+    threshold - name of the threshold field for evaluation\n
     sec_unit - number representing one second of signal - this can\n
     significantly imporove the speed of this operation\n
     sec_margin - margin for creating subsets of compared data - should be set\n
-    according to the legnth of compared events (1s for HFO should be enough)
+    according to the legnth of compared events (1s for HFO should be enough)\n
+    eval_type - whether to use bigger than threshold or equal to threshold\n
+    for thresholding, options are 'equal' or 'bigger'
     
     Returns:
     --------
     precision - list of precision points\n
     recall - list of recall points\n
+    f1_score - list of f1 points\n
     """
     
     # Initiate lists
     precision = []
     recall = []
+    f1_score = []
 
     # Thresholds
     ths = list(dd_df[threshold].unique())
@@ -60,25 +65,34 @@ def create_precision_recall_curve(gs_df, dd_df, bn, threshold,
     # Run through thresholds
     for th in ths:
         print('Processing threshold '+str(th))
-        if sec_unit:
-            p, r = calculate_precision_recall(gs_df,
-                                              dd_df[dd_df[threshold] == th],
-                                              bn,
-                                              sec_unit,
-                                              sec_margin)
+        
+        if eval_type == 'equal':
+            sub_dd_df = dd_df[dd_df[threshold] == th]
+        elif eval_type == 'bigger':
+            sub_dd_df = dd_df[dd_df[threshold] >= th]
         else:
-            p, r = calculate_precision_recall(gs_df,
-                                              dd_df[dd_df[threshold] == th],
-                                              bn)
+            raise RuntimeError('Unknown eval_type "'+eval_type+'"')
+        
+        if sec_unit:
+            p, r, f = calculate_precision_recall_f_score(gs_df,
+                                                         sub_dd_df,
+                                                         bn,
+                                                         sec_unit,
+                                                         sec_margin)
+        else:
+            p, r, f = calculate_precision_recall_f_score(gs_df,
+                                                         sub_dd_df,
+                                                         bn)
             
         precision.append(p)
         recall.append(r)
+        f1_score.append(f)
         
-    return precision, recall
+    return precision, recall, f1_score
     
 
-def calculate_precision_recall(gs_df, dd_df, bn, 
-                               sec_unit = None, sec_margin = 1):
+def calculate_precision_recall_f_score(gs_df, dd_df, bn, 
+                                       sec_unit = None, sec_margin = 1):
     """
     Function to calculate precision and recall values.
     
@@ -96,6 +110,7 @@ def calculate_precision_recall(gs_df, dd_df, bn,
     --------
     precision - precision of the detection set\n
     recall - recall(sensitivity) of the detection set\n
+    f_score - f1 score\n
     """
     
     # Create column for matching
@@ -139,7 +154,8 @@ def calculate_precision_recall(gs_df, dd_df, bn,
     # Calculate precision and recall
     precision = TP / (TP + FP)
     recall = TP / (TP + FN)
+    f1_score = 2 * ((precision * recall) / (precision + recall))
     
-    return precision, recall
+    return precision, recall, f1_score
 
             
