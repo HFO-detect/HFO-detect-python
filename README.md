@@ -1,3 +1,6 @@
+# Discontinued
+This project has been discontinued and will no longer be worked on. As an alternative have a look at the [EPYCOM project](https://gitlab.com/icrc-bme/epycom).
+
 # HFO-detect-python
 Python library for automated HFO detection
 
